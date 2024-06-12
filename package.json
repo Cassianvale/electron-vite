@@ -23,7 +23,9 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
+    "electron-store": "^9.0.0",
     "electron-updater": "^6.2.1",
+    "pinia": "^2.1.7",
     "primevue": "^3.52.0"
   },
   "devDependencies": {

@@ -2,6 +2,9 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import Store from 'electron-store'
+
+const store = new Store()
 
 function createWindow(): void {
   // Create the browser window.
@@ -51,6 +54,43 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+
+  // IPC handlers
+  ipcMain.handle('load-config', async () => {
+    return store.get('config', {
+      backendURL: '',
+      deliveryURL: '',
+      mysqlHost: '',
+      mysqlUser: '',
+      mysqlPassword: '',
+      mysqlDatabase: '',
+    })
+  })
+
+  ipcMain.handle('save-config', async (_, config) => {
+    store.set('config', config)
+  })
+
+  ipcMain.handle('test-connection', async () => {
+    const config = store.get('config')
+    if (!config.mysqlHost || !config.mysqlUser || !config.mysqlPassword || !config.mysqlDatabase) {
+      throw new Error('MySQL 配置未设置')
+    }
+
+    try {
+      const connection = await mysql.createConnection({
+        host: config.mysqlHost,
+        user: config.mysqlUser,
+        password: config.mysqlPassword,
+        database: config.mysqlDatabase
+      })
+      await connection.end()
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  })
 
   createWindow()
 
