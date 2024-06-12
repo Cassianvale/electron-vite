@@ -4,6 +4,7 @@
   "description": "An Electron application with Vue and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
+  "type": "module",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
@@ -23,10 +24,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
-    "electron-store": "^9.0.0",
-    "electron-updater": "^6.2.1",
-    "pinia": "^2.1.7",
-    "primevue": "^3.52.0"
+    "element-plus": "^2.7.5"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",
@@ -37,15 +35,21 @@
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^13.0.0",
+    "axios": "^1.7.2",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3",
+    "electron-store": "^9.0.0",
+    "electron-updater": "^6.2.1",
     "electron-vite": "^2.2.0",
     "eslint": "^9.4.0",
     "eslint-plugin-vue": "^9.26.0",
+    "pinia": "^2.1.7",
     "prettier": "^3.3.2",
+    "primevue": "^3.52.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.13",
     "vue": "^3.4.27",
+    "vue-router": "^4.3.3",
     "vue-tsc": "^2.0.21"
   }
 }

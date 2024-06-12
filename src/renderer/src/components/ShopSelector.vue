@@ -3,15 +3,14 @@
   <div class="store-selector">
     <h2>门店选择</h2>
     <select v-model="selectedShop" @change="onShopChange">
-      <option value="" disabled>选择一个门店</option>
+      <option value="" disabled>无</option>
       <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
     </select>
-    <button @click="loadShops">加载门店</button>
+    <Button @click="loadShops">加载门店</Button>
     <div>
-      <h3>Store Data</h3>
-      <p>Shop ID: {{ storeData.id }}</p>
-      <p>Serial: {{ storeData.serial }}</p>
-      <p>Store IDs: {{ storeData.store_ids }}</p>
+      <p>shop_id: {{ storeData.id }}</p>
+      <p>store_id: {{ storeData.store_ids }}</p>
+      <p>serial: {{ storeData.serial }}</p>
     </div>
   </div>
 </template>
@@ -19,6 +18,7 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import Button from 'primevue/button';
 
 const selectedShop = ref('')
 const shops = ref([])
@@ -40,9 +40,5 @@ const onShopChange = () => {
 </script>
 
 <style scoped>
-.store-selector {
-  padding: 20px;
-  border: 1px solid #ccc;
-  margin-top: 20px;
-}
+
 </style>

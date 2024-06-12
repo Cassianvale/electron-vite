@@ -1,16 +1,18 @@
 <template>
   <div id="app">
-    <ShopSelector />
-    <StatusUpdater />
-    <PresetOptions />
+    <router-view />
+    <!-- <DarkModeToggle />
+    Test测试测试测试测试测试测试 -->
   </div>
-  <Versions />
+
 </template>
 
 <script setup lang="ts">
-import Versions from './components/Versions.vue'
-import ShopSelector from './components/ShopSelector.vue'
-import StatusUpdater from './components/StatusUpdater.vue'
-import PresetOptions from './components/PresetOptions.vue'
+import DarkModeToggle from './components/DarkModeToggle.vue'
 
 </script>
+
+
+<style scoped>
+
+</style>
