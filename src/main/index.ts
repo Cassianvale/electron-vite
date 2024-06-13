@@ -7,15 +7,10 @@ import Store from 'electron-store'
 
 const store = new Store()
 
-
-const login_width=350;
-const login_height=450;
-
-
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: login_width,
-    height: login_height,
+    width: 400,
+    height: 450,
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
