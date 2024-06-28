@@ -4,7 +4,6 @@
   "description": "An Electron application with Vue and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
-  "type": "module",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
@@ -24,7 +23,12 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
-    "element-plus": "^2.7.5"
+    "@electron-uikit/contextmenu": "^1.0.0",
+    "@electron-uikit/core": "^1.0.0",
+    "@electron-uikit/titlebar": "^1.0.0",
+    "@element-plus/icons-vue": "^2.3.1",
+    "element-plus": "^2.7.5",
+    "mysql2": "^3.10.1"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",
