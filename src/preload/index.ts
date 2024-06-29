@@ -1,11 +1,17 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-// 预加载脚本
+import { getCurrentWindow } from '@electron/remote'
+
 // Custom APIs for renderer
 const api = {
   loadConfig: () => ipcRenderer.invoke('load-config'),
   saveConfig: (config) => ipcRenderer.invoke('save-config', config),
-  getShops: () => ipcRenderer.invoke('get-shops')
+  getShops: () => ipcRenderer.invoke('get-shops'),
+  isMacintosh: () => process.platform === 'darwin',  // 检测平台
+  toggleAlwaysOnTop: () => {
+    const windowId = getCurrentWindow().id
+    ipcRenderer.send('toggle-always-on-top', windowId)
+  },
 }
 
 // 使用 contextBridge API 暴露 Electron API 到渲染进程

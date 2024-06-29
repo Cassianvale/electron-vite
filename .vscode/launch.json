@@ -1,6 +1,12 @@
 {
   "version": "0.2.0",
   "configurations": [
+
+    {
+      "name": "(Windows) 附加",
+      "type": "cppvsdbg",
+      "request": "attach"
+    },
     {
       "name": "Debug Main Process",
       "type": "node",
@@ -12,7 +18,8 @@
       },
       "runtimeArgs": ["--sourcemap"],
       "env": {
-        "REMOTE_DEBUGGING_PORT": "9222"
+        "REMOTE_DEBUGGING_PORT": "9222",
+        "APP_TYPE": "printPool"
       }
     },
     {

@@ -8,104 +8,10 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     />
-
-    <script type="module">
-      import '@electron-uikit/titlebar/renderer'
-      import { Moon, Sunny } from '@element-plus/icons-vue'
-
-      window.Moon = Moon
-      window.Sunny = Sunny
-    </script>
-
-    <style>
-      /* CSS style: control icon */
-      .titlebar {
-        height: 32px;
-        --tb-theme-color: #ffffff;
-        --tb-title-text-color: #333333;
-        --tb-control-symbol-color: #585c65;
-        --tb-control-hover-color: #e1e1e1;
-        transition: background-color 0.3s, color 0.3s; /* Add transition for smooth effect */
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .titlebar {
-          --tb-theme-color: #1f1f1f;
-          --tb-title-text-color: #cccccc;
-          --tb-control-symbol-color: #cccccc;
-          --tb-control-hover-color: #373737;
-        }
-      }
-
-      .dark-mode {
-        --tb-theme-color: #1f1f1f;
-        --tb-title-text-color: #cccccc;
-        --tb-control-symbol-color: #cccccc;
-        --tb-control-hover-color: #373737;
-        background-color: #1f1f1f;
-        color: #cccccc;
-        transition: background-color 0.3s, color 0.3s; /* Add transition for smooth effect */
-      }
-
-      .light-mode {
-        --tb-theme-color: #ffffff;
-        --tb-title-text-color: #333333;
-        --tb-control-symbol-color: #585c65;
-        --tb-control-hover-color: #e1e1e1;
-        background-color: #ffffff;
-        color: #333333;
-        transition: background-color 0.3s, color 0.3s; /* Add transition for smooth effect */
-      }
-
-      /* Ensure transition applies to the entire body */
-      body {
-        transition: background-color 0.3s, color 0.3s;
-      }
-    </style>
   </head>
 
-  <body class="light-mode">
-    <title-bar id="titlebar" windowtitle="Electron UIKit" supportfullscreen class="titlebar">
-      <div id="control" class="window__control">
-        <i id="icon" class="el-icon"></i>
-      </div>
-    </title-bar>
-
+  <body>
     <div id="app"></div>
-
-    <script type="module">
-      import { h, createApp } from 'vue'
-      import { Moon, Sunny } from '@element-plus/icons-vue'
-
-      const control = document.getElementById('control');
-      const iconContainer = document.getElementById('icon');
-      let isDarkMode = false;
-
-      const updateIcon = () => {
-        const IconComponent = isDarkMode ? Moon : Sunny;
-        const app = createApp({
-          render() {
-            return h(IconComponent)
-          }
-        });
-        app.mount(iconContainer);
-      };
-
-      control.addEventListener('click', () => {
-        isDarkMode = !isDarkMode;
-        if (isDarkMode) {
-          document.body.classList.remove('light-mode');
-          document.body.classList.add('dark-mode');
-        } else {
-          document.body.classList.remove('dark-mode');
-          document.body.classList.add('light-mode');
-        }
-        updateIcon();
-      });
-
-      updateIcon(); // Initial icon render
-    </script>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -1,11 +1,107 @@
 {
+  "unocss.root": "src/renerer",
+  "css.validate": false,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    ".env.development": ".env.*",
+    "package.json": "version.ts, tsconfig.*, *.config.js, *.config.ts, .stackblitzrc, pnpm*, .npm*, binding.gyp, electron*,dev-app-update.yml",
+    "README.md": ".git*, .eslint*, .prettier*, .stylelint*, commitlint*, .editorconfig, .vscode, sys.cfg"
+  },
+  "editor.formatOnSave": false,
+  "nuxt.isNuxtApp": false,
+  "files.associations": {
+    "algorithm": "cpp",
+    "atomic": "cpp",
+    "bit": "cpp",
+    "cctype": "cpp",
+    "clocale": "cpp",
+    "cmath": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp",
+    "cstddef": "cpp",
+    "cstdint": "cpp",
+    "cstdio": "cpp",
+    "cstdlib": "cpp",
+    "cstring": "cpp",
+    "ctime": "cpp",
+    "cwchar": "cpp",
+    "deque": "cpp",
+    "exception": "cpp",
+    "initializer_list": "cpp",
+    "ios": "cpp",
+    "iosfwd": "cpp",
+    "iostream": "cpp",
+    "istream": "cpp",
+    "iterator": "cpp",
+    "limits": "cpp",
+    "memory": "cpp",
+    "new": "cpp",
+    "optional": "cpp",
+    "ostream": "cpp",
+    "queue": "cpp",
+    "ranges": "cpp",
+    "span": "cpp",
+    "stdexcept": "cpp",
+    "streambuf": "cpp",
+    "string": "cpp",
+    "system_error": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "typeinfo": "cpp",
+    "utility": "cpp",
+    "vector": "cpp",
+    "xfacet": "cpp",
+    "xiosbase": "cpp",
+    "xlocale": "cpp",
+    "xlocinfo": "cpp",
+    "xlocnum": "cpp",
+    "xmemory": "cpp",
+    "xstddef": "cpp",
+    "xstring": "cpp",
+    "xtr1common": "cpp",
+    "xutility": "cpp",
+    "functional": "cpp",
+    "list": "cpp",
+    "map": "cpp",
+    "mutex": "cpp",
+    "ratio": "cpp",
+    "set": "cpp",
+    "sstream": "cpp",
+    "stop_token": "cpp",
+    "thread": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "xhash": "cpp",
+    "xtree": "cpp",
+    "xlocbuf": "cpp",
+    "codecvt": "cpp",
+    "locale": "cpp",
+    "xlocmes": "cpp",
+    "xlocmon": "cpp",
+    "xloctime": "cpp",
+    "fstream": "cpp",
+    "complex": "cpp",
+    "iomanip": "cpp",
+    "numeric": "cpp",
+    "*.rh": "cpp",
+    "regex": "cpp"
+  },
+  "C_Cpp.errorSquiggles": "disabled",
+  "files.exclude": {
+    ".github": true
+  },
+  "editor.inlineSuggest.showToolbar": "always"
 }

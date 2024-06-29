@@ -28,7 +28,6 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElForm, ElInput, ElButton, ElCheckbox, ElNotification } from 'element-plus'
 
 // 检测是否在 Electron 环境中
@@ -42,7 +41,6 @@ interface LoginForm {
   password: string;
 }
 
-const router = useRouter()
 const loginForm = ref<LoginForm>({
   username: '',
   password: ''
@@ -61,18 +59,19 @@ const rememberMe = ref<boolean>(false)
 
 const handleLogin = async () => {
   if (formRef.value) {
-    await formRef.value.validate((valid: boolean, _fields: any) => { // 添加 fields 参数
+    await formRef.value.validate((valid: boolean, _fields: any) => {
       if (valid) {
-        // 模拟登录请求
+        // 模拟登录
         setTimeout(() => {
-          // 假设登录成功，显示通知并跳转到主页面
           ElNotification({
             title: '成功',
             message: '登录成功！',
             type: 'success',
             duration: 2000
           })
-          router.push('/shops')
+
+          window.electron.ipcRenderer.send('login-success');
+
         }, 100)
       } else {
         console.log('error submit!!');
@@ -85,9 +84,9 @@ const handleLogin = async () => {
 
 <style scoped>
 body {
-  height: 100vh; /* 设定body高度 */
-  margin: 0; /* 移除默认边距 */
-  padding: 0; /* 移除默认内边距 */
+  height: 0vh; /* 设定body高度 */
+  margin: 0;
+  padding: 0;
   font-family: "Monaco", sans-serif, "Noto Sans";
   font-size: 14px;
   display: flex;
@@ -99,7 +98,6 @@ body {
 .background-wrapper {
   background: url('../assets/macosbackground.jpg') no-repeat center center fixed; /* 添加背景图片 */
   background-size: cover; /* Cover to ensure it fills the area */
-  border-radius: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -113,8 +111,8 @@ body {
 }
 
 .background-wrapper.electron {
-  height: 400px; /* 设定高度 */
-  width: 350px;
+  height: 100%;
+  width: 100%;
 }
 
 .login-form {
@@ -123,15 +121,11 @@ body {
 }
 
 .login-container {
-  width: 340px;
-  padding: 15px;
+  padding: 38px;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .login-container.electron {
@@ -176,7 +170,7 @@ body {
   margin: 0 auto;
 }
 
-::v-deep .el-checkbox__label {
+:deep(.el-checkbox__label) {
   color: #000;
 }
 

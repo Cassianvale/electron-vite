@@ -1,4 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { initialize } from '@electron/remote/main'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -9,65 +10,87 @@ import {
 import Store from 'electron-store'
 import { useUIKit } from '@electron-uikit/core/main'
 
+initialize()  // 初始化 @electron/remote
 
 const store = new Store()
 
-function createWindow(): void {
-  // Register title bar IPC listeners
-  registerTitleBarListener()
-  useUIKit()
-  const win = new BrowserWindow({
-    // width: 400,
-    // height: 450,
-    show: false,
-    autoHideMenuBar: true, // 菜单栏是否隐藏
-    titleBarStyle: 'hidden', // 隐藏标题栏
-    //resizable:true, // 允许拉伸或收缩
-    //frame: false, // 隐藏默认框架以实现自定义圆角
-    //transparent: true, // 启用透明背景
-    //backgroundColor: '#00FFFFFF', // 设置透明背景
-    ...(process.platform === 'linux' ? { icon } : {}),
+let windows: { [key: string]: BrowserWindow } = {}
+
+function alwaysOnTop(app: Electron.App, win: BrowserWindow) {
+  const is_mac = process.platform === 'darwin'
+  if (is_mac) {
+    app.dock.hide()
+  }
+  win.setAlwaysOnTop(true, "screen-saver")
+  win.setVisibleOnAllWorkspaces(true)
+}
+
+
+function createWindow(route: string, options: Electron.BrowserWindowConstructorOptions): BrowserWindow {
+  const window = new BrowserWindow({
+    ...options,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegration:false,
+      contextIsolation: true,
     }
   })
 
-  // Attach a title bar to the window
-  attachTitleBarToWindow(win)
+  require('@electron/remote/main').enable(window.webContents)  // 启用 remote 模块
 
-  win.on('ready-to-show', () => {
-    win.show()
+  attachTitleBarToWindow(window)
+
+  window.on('ready-to-show', () => {
+    window.show()
   })
 
-  win.webContents.setWindowOpenHandler((details) => {
+  window.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    window.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#${route}`)
   } else {
-    win.loadFile(join(__dirname, '../renderer/index.html'))
+    window.loadFile(join(__dirname, '../renderer/index.html'), { hash: route })
   }
+
+  return window
+}
+
+function createLoginWindow(): void {
+  const loginWindow = createWindow('/', {
+    width: 400,
+    height: 450,
+    show: false,
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'linux' ? { icon } : {})
+  })
+  windows['login'] = loginWindow
+}
+
+function createHomeWindow(): void {
+  const homeWindow = createWindow('/home', {
+    show: false,
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'linux' ? { icon } : {})
+  })
+  windows['home'] = homeWindow
 }
 
 app.whenReady().then(() => {
+  // 设置默认主题，注释掉可跟随操作系统主题
+  nativeTheme.themeSource = 'light'
 
-  nativeTheme.themeSource = 'light' // 设置为'light'或'dark'以固定主题
-
-  // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-
-  // IPC handlers
   ipcMain.handle('load-config', async () => {
     return store.get('config', {
       backendURL: '',
@@ -103,10 +126,27 @@ app.whenReady().then(() => {
     }
   })
 
-  createWindow()
+  ipcMain.on('toggle-always-on-top', (event, windowId) => {
+    const win = BrowserWindow.fromId(windowId)
+    if (win) {
+      const isAlwaysOnTop = win.isAlwaysOnTop()
+      if (isAlwaysOnTop) {
+        win.setAlwaysOnTop(false)
+        if (process.platform === 'darwin') {
+          app.dock.show()
+        }
+      } else {
+        alwaysOnTop(app, win)
+      }
+    }
+  })
+
+  registerTitleBarListener()
+  useUIKit()
+  createLoginWindow()
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createLoginWindow()
   })
 })
 
@@ -115,3 +155,13 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+ipcMain.on('login-success', () => {
+  if (windows['login']) {
+    windows['login'].close()
+    delete windows['login']
+  }
+  createHomeWindow()
+})
+
+
