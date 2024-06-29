@@ -1,9 +1,11 @@
 <template>
-  <title-bar id="titlebar"
-  windowtitle="Electron UIKit"
-  supportfullscreen
-  :class="cIsMac ? 'h-32px': 'h-26px'"
-  class="titlebar bg-[#E1E8F0] block">
+  <title-bar
+    id="titlebar"
+    windowtitle="windowTitle"
+    supportfullscreen
+    :class="[cIsMac ? 'h-32px' : 'h-26px', isDarkMode ? 'dark-mode' : 'light-mode']"
+    class="titlebar flex"
+  >
 
     <div id="pin-control" class="window__control" ref="pinControl">
 
@@ -13,7 +15,6 @@
       <i id="icon" class="el-icon" ref="iconContainer">
       </i>
     </div>
-
   </title-bar>
 </template>
 
@@ -74,6 +75,11 @@ watch(pinIcon, (newVal) => {
 });
 
 onMounted(() => {
+  window.electron.ipcRenderer.on('window-title-update', (event, title) => {
+    console.log('Received window-title-update with title:', title) // 调试日志
+    windowTitle.value = title
+  })
+
   if (window.api && typeof window.api.isMacintosh === 'function') {
     cIsMac.value = window.api.isMacintosh();
     console.log(`当前系统是${cIsMac.value ? 'MacOS' : 'Windows'}`);
@@ -107,17 +113,7 @@ onMounted(() => {
 
 
 <style lang="scss" scoped>
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-html,body {
-  background-color: var(--tb-theme-color);
-  color: var(--tb-title-text-color);
-  transition: background-color 0.3s, color 0.3s;
-}
 .window__control {
   display: flex;
   align-items: center;
@@ -130,45 +126,4 @@ html,body {
   transition: fill 0.3s;
 }
 
-.titlebar {
-  --tb-theme-color: #ffffff;
-  --tb-title-text-color: #333333;
-  --tb-control-symbol-color: #585c65;
-  --tb-control-hover-color: #e1e1e1;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-@media (prefers-color-scheme: dark) {
-  .titlebar {
-    --tb-theme-color: #1f1f1f;
-    --tb-title-text-color: #cccccc;
-    --tb-control-symbol-color: #cccccc;
-    --tb-control-hover-color: #373737;
-  }
-}
-
-:root {
-  --tb-theme-color: #ffffff;
-  --tb-title-text-color: #333333;
-  --tb-control-symbol-color: #585c65;
-  --tb-control-hover-color: #e1e1e1;
-}
-
-.dark-mode {
-  --tb-theme-color: #1f1f1f;
-  --tb-title-text-color: #cccccc;
-  --tb-control-symbol-color: #cccccc;
-  --tb-control-hover-color: #373737;
-  background-color: var(--tb-theme-color);
-  color: var(--tb-title-text-color);
-}
-
-.light-mode {
-  --tb-theme-color: #ffffff;
-  --tb-title-text-color: #333333;
-  --tb-control-symbol-color: #585c65;
-  --tb-control-hover-color: #e1e1e1;
-  background-color: var(--tb-theme-color);
-  color: var(--tb-title-text-color);
-}
 </style>

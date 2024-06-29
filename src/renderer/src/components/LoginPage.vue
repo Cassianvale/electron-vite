@@ -18,7 +18,10 @@
           <el-button type="primary" class="login-button" @click="handleLogin">登录</el-button>
         </el-form-item>
         <div class="register-link">
-          你还没有账号？<a href="#">注册</a>
+          你还没有账号？
+          <a href="#">
+            注册
+          </a>
         </div>
       </el-form>
     </div>
@@ -29,6 +32,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { ElForm, ElInput, ElButton, ElCheckbox, ElNotification } from 'element-plus'
+
 
 // 检测是否在 Electron 环境中
 const isElectron = navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
@@ -54,7 +58,6 @@ const rules = {
     { required: true, message: '请输入密码', trigger: 'blur' }
   ]
 }
-
 const rememberMe = ref<boolean>(false)
 
 const handleLogin = async () => {
@@ -68,11 +71,17 @@ const handleLogin = async () => {
             message: '登录成功！',
             type: 'success',
             duration: 2000
-          })
-
-          window.electron.ipcRenderer.send('login-success');
-
-        }, 100)
+          });
+          // window.electron.ipcRenderer.invoke('create-generic-window', {
+          //   route: '/home',
+          //   width: 800,
+          //   height: 600,
+          //   title: 'OVO - 主页'
+          // });
+        setTimeout(() => {
+            window.electron.ipcRenderer.send('login-success');
+          }, 500); // 延迟2秒后发送'login-success'事件
+        }, 100); // 出现通知的时间
       } else {
         console.log('error submit!!');
         return false;
@@ -121,7 +130,7 @@ body {
 }
 
 .login-container {
-  padding: 38px;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -171,7 +180,7 @@ body {
 }
 
 :deep(.el-checkbox__label) {
-  color: #000;
+  color: rgb(0, 0, 0);
 }
 
 .forgot-password {
@@ -183,6 +192,7 @@ body {
 
 
 .register-link {
+  color: rgb(0, 0, 0);
   margin-top: 10px;
   text-align: center;
   font-size: 14px;

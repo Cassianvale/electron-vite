@@ -13,7 +13,9 @@ import TitleBar from './components/TitleBar.vue'
 
 
 <style scoped>
-
-
-
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 </style>
