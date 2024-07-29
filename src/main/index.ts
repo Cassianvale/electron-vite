@@ -30,12 +30,14 @@ function alwaysOnTop(app, win) {
 
 // 创建窗口的通用函数
 function createWindow(route, options) {
+
   // 如果窗口已存在，显示并返回它
   const existingWindow = windows[route];
   if (existingWindow) {
     existingWindow.show();
     return existingWindow;
   }
+
   // 创建新窗口
   const window = new BrowserWindow({
     ...options,
