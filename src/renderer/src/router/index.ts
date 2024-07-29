@@ -4,6 +4,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import LoginPage from '../components/LoginPage.vue'
 import HomePage from '../components/HomePage.vue'
 import NewsPage from '../components/NewsPage.vue'
+import StatsChart from '../components/StatsChart.vue'
 import ConfigPage from '../components/ConfigPage.vue'
 
 
@@ -21,10 +22,14 @@ const routes = [
       requiresAuth: true
      }
   },
-
   {
     path: '/news',
     component: NewsPage,
+  },
+  {
+    path: '/statschart',
+    name: 'StatsChart',
+    component: StatsChart
   },
 
   { path: '/config',

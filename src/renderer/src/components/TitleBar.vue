@@ -6,33 +6,47 @@
     :class="[cIsMac ? 'h-32px' : 'h-26px', isDarkMode ? 'dark-mode' : 'light-mode']"
     class="titlebar flex"
   >
-
-    <div id="pin-control" class="window__control" ref="pinControl">
-
-      <i id="pin-icon" class="el-icon" ref="pinIconContainer" v-html="pinIcon"></i>
+    <template v-if="authStore.isLoggedIn">
+      <div id="setting" class="window__control" ref="settingControl">
+        <i id="setting-icon" class="el-icon" ref="settingContainer">
+          <el-icon><Setting /></el-icon>
+        </i>
       </div>
-    <div id="control" class="window__control" ref="control">
-      <i id="icon" class="el-icon" ref="iconContainer">
-      </i>
-    </div>
+
+      <div id="control" class="window__control" ref="control">
+        <i id="icon" class="el-icon" ref="iconContainer"></i>
+      </div>
+
+      <div id="pin-control" class="window__control" ref="pinControl">
+        <i id="pin-icon" class="el-icon" ref="pinIconContainer" v-html="pinIcon"></i>
+      </div>
+    </template>
+
   </title-bar>
 </template>
 
-<script setup type="module">
+<script setup lang="ts">
+
 import '@electron-uikit/titlebar/renderer'
 import { ref, computed, onMounted, watch, h, createApp } from 'vue';
-import { Moon, Sunny } from '@element-plus/icons-vue'
+import { Moon, Sunny, Setting } from '@element-plus/icons-vue';
+import { useAuthStore } from '../store/auth';
+
+const authStore = useAuthStore();
+const isLoggedIn = ref(authStore.isLoggedIn);
 
 const isDarkMode = ref(false);
 const isPinned = ref(false);
-const control = ref(null);
-const iconContainer = ref(null);
-const pinControl = ref(null);
-const pinIconContainer = ref(null);
+const settingControl = ref(null);
+const control = ref<HTMLElement | null>(null);
+const iconContainer = ref<HTMLElement | null>(null);
+const pinControl = ref<HTMLElement | null>(null);
+const pinIconContainer = ref<HTMLElement | null>(null);
 const cIsMac = ref(false);
+const windowTitle = ref('');  // 初始化为非 null 值
 
-// 保持对当前应用实例的引用
-let currentApp = null;
+
+let currentApp: any = null;
 
 const updateIcon = () => {
   const IconComponent = isDarkMode.value ? Moon : Sunny;
@@ -42,16 +56,13 @@ const updateIcon = () => {
     }
   });
 
-  // 清空容器
   if (iconContainer.value) {
     iconContainer.value.innerHTML = '';
 
-    // 卸载当前应用实例
     if (currentApp) {
       currentApp.unmount();
     }
 
-    // 挂载新的应用实例
     currentApp = app;
     app.mount(iconContainer.value);
   }
@@ -65,7 +76,9 @@ const pinIcon = computed(() => {
 });
 
 const updatePinIcon = () => {
-  pinIconContainer.value.innerHTML = pinIcon.value;
+  if (pinIconContainer.value) {
+    pinIconContainer.value.innerHTML = pinIcon.value;
+  }
 };
 
 watch(pinIcon, (newVal) => {
@@ -74,11 +87,30 @@ watch(pinIcon, (newVal) => {
   }
 });
 
+
+
 onMounted(() => {
-  window.electron.ipcRenderer.on('window-title-update', (event, title) => {
-    console.log('Received window-title-update with title:', title) // 调试日志
-    windowTitle.value = title
-  })
+
+  window.electron.ipcRenderer.on('window-title-updated', (_, title) => {
+    windowTitle.value = title;
+  });
+
+  window.electron.ipcRenderer.on('login-success', () => {
+    console.log('login-success event received in TitleBar.vue'); // 添加调试日志
+    isLoggedIn.value = true;
+  });
+
+  window.electron.ipcRenderer.on('window-title-updated', (_, { title, logo }) => {
+    const titlebarElement = document.getElementById('titlebar');
+    const titleDom = titlebarElement?.shadowRoot?.querySelector('.titlebar__title');
+    if (titleDom) {
+      if (logo) {
+        titleDom.innerHTML = `<span style="margin-right: 3px;margin-bottom: 3px;font-size: 17px;">${logo}</span>${title}`;
+      } else {
+        titleDom.innerHTML = `${title}`;
+      }
+    }
+  });
 
   if (window.api && typeof window.api.isMacintosh === 'function') {
     cIsMac.value = window.api.isMacintosh();
@@ -87,27 +119,33 @@ onMounted(() => {
     console.error('window.api.isMacintosh不是函数或window.api未定义');
   }
 
-  control.value.addEventListener('click', () => {
-    isDarkMode.value = !isDarkMode.value;
-    if (isDarkMode.value) {
-      document.body.classList.remove('light-mode');
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-      document.body.classList.add('light-mode');
-    }
-    updateIcon();
-  });
+  if (control.value) {
+    control.value.addEventListener('click', () => {
+      isDarkMode.value = !isDarkMode.value;
+      if (isDarkMode.value) {
+        document.body.classList.remove('light-mode');
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+        document.body.classList.add('light-mode');
+      }
+      updateIcon();
+    });
+  }
   updateIcon();
 
-  pinControl.value.addEventListener('click', () => {
-    isPinned.value = !isPinned.value;
-    window.api.toggleAlwaysOnTop(); // 使用 IPC 调用主进程方法
-    updatePinIcon();
-  });
+  if (pinControl.value) {
+    pinControl.value.addEventListener('click', () => {
+      isPinned.value = !isPinned.value;
+      window.api.toggleAlwaysOnTop();
+      updatePinIcon();
+    });
+  }
   updatePinIcon();
-});
 
+
+
+});
 </script>
 
 

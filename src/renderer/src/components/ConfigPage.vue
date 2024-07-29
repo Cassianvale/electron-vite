@@ -3,11 +3,11 @@
     <h2>配置设置</h2>
     <form @submit.prevent="saveConfig">
       <div>
-        <label for="backendURL">小吃机后台 URL</label>
+        <label for="shpURL">小吃机后台 URL</label>
         <input v-model="config.backendURL" id="backendURL" type="text" required />
       </div>
       <div>
-        <label for="deliveryURL">外卖后台 URL</label>
+        <label for="takeawayURL">外卖后台 URL</label>
         <input v-model="config.deliveryURL" id="deliveryURL" type="text" required />
       </div>
       <div>
@@ -35,8 +35,8 @@
 import { ref, onMounted } from 'vue'
 
 const config = ref({
-  backendURL: '',
-  deliveryURL: '',
+  shpURL: '',
+  takeawayURL: '',
   mysqlHost: '',
   mysqlUser: '',
   mysqlPassword: '',

@@ -1,13 +1,15 @@
 <template>
   <div class="homepage">
+    <p>{{ windowTitle }}</p>
     <p>{{ message }}</p>
     <button @click="incrementCounter">点击我</button>
     <p>计数器: {{ counter }}</p>
     <p class="mt-10"><el-button type="default" size="small" @click="createNewsWindow">News窗口</el-button></p>
+    <p class="mt-10"><el-button type="default" size="small" @click="goToStatsChart">StatsChart窗口</el-button></p>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
 const message = ref('这是一个使用 Vue 3 和 Composition API 创建的简单示例页面。')
@@ -19,21 +21,29 @@ const incrementCounter = () => {
   counter.value++
 }
 
-// 点击News窗口按钮创建 News 窗口
+// News窗口
 const createNewsWindow = () => {
-  window.electron.ipcRenderer.invoke('create-generic-window', {
-    url: '/news',
-    width: 400,
-    height: 300,
-    parent: 'home'
-  });
+  window.api.createGenericWindow('/news', 400, 300);
 }
 
+// statschart窗口
+const goToStatsChart = () => {
+  window.api.createGenericWindow('/statschart', 1500, 600);
+};
+
+const updateTitle = () => {
+  // emoji葡萄
+  const logo = '🍇';
+  if (logo) {
+    window.api.updateWindowTitle('主页', logo);
+  } else {
+    window.api.updateWindowTitle('主页');
+  }
+};
+
+
 onMounted(() => {
-  window.electron.ipcRenderer.on('window-title-update', (event, newTitle) => {
-    console.log('Received window-title-update in Home.vue with title:', newTitle)
-    windowTitle.value = newTitle
-  })
+  updateTitle();
 
 })
 </script>

@@ -29,10 +29,34 @@
 </template>
 
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ref } from 'vue'
+import { onMounted } from 'vue';
 import { ElForm, ElInput, ElButton, ElCheckbox, ElNotification } from 'element-plus'
+import { useAuthStore } from '../store/auth';
 
+
+const authStore = useAuthStore();
+
+
+// 定义更新标题的函数
+const updateTitle = () => {
+  const logo = '🍎'; // 使用 emoji 作为 logo
+  if (logo) {
+    window.api.updateWindowTitle('登录页面', logo);
+  } else {
+    window.api.updateWindowTitle('登录页面');
+  }
+};
+
+// 挂载时更新标题
+onMounted(() => {
+  setTimeout(() => {
+    console.log('onMounted called');
+    updateTitle();
+    console.log('Title updated');
+  }, 0);
+});
 
 // 检测是否在 Electron 环境中
 const isElectron = navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
@@ -62,7 +86,7 @@ const rememberMe = ref<boolean>(false)
 
 const handleLogin = async () => {
   if (formRef.value) {
-    await formRef.value.validate((valid: boolean, _fields: any) => {
+    await formRef.value.validate(async (valid: boolean) => {
       if (valid) {
         // 模拟登录
         setTimeout(() => {
@@ -72,16 +96,13 @@ const handleLogin = async () => {
             type: 'success',
             duration: 2000
           });
-          // window.electron.ipcRenderer.invoke('create-generic-window', {
-          //   route: '/home',
-          //   width: 800,
-          //   height: 600,
-          //   title: 'OVO - 主页'
-          // });
-        setTimeout(() => {
-            window.electron.ipcRenderer.send('login-success');
-          }, 500); // 延迟2秒后发送'login-success'事件
-        }, 100); // 出现通知的时间
+
+          window.electron.ipcRenderer.send('login-success', 'Login success');
+
+          authStore.login();  // 更新 Pinia 状态
+          console.log(authStore.isLoggedIn);  // true
+
+        }, 200); // 出现通知的时间
       } else {
         console.log('error submit!!');
         return false;

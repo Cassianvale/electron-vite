@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron';
-import { initialize } from '@electron/remote/main';
+import { initialize, enable } from '@electron/remote/main';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
@@ -8,15 +8,25 @@ import {
   attachTitleBarToWindow
 } from '@electron-uikit/titlebar';
 import { useUIKit } from '@electron-uikit/core/main';
+import si from 'systeminformation'; // 获取系统信息
+
 
 // 初始化 @electron/remote
 initialize();
 
-let windows = {};
-// 定时打印当前打开的窗口数量
+const windows: { [key: string]: BrowserWindow } = {};
+
+//定时打印当前打开的窗口数量
 setInterval(() => {
   console.log('windows:', Object.keys(windows).length);
-}, 5000);
+}, 1000);
+
+// 扩展 BrowserWindow 类型
+declare module 'electron' {
+  interface BrowserWindow {
+    updateInterval?: NodeJS.Timeout;
+  }
+}
 
 // 将窗口设置为始终置顶，对Mac系统隐藏dock
 function alwaysOnTop(app, win) {
@@ -30,7 +40,6 @@ function alwaysOnTop(app, win) {
 
 // 创建窗口的通用函数
 function createWindow(route, options) {
-
   // 如果窗口已存在，显示并返回它
   const existingWindow = windows[route];
   if (existingWindow) {
@@ -48,7 +57,7 @@ function createWindow(route, options) {
   });
 
   // 启用 @electron/remote
-  require('@electron/remote/main').enable(window.webContents);
+  enable(window.webContents);
 
   // 附加标题栏到窗口
   attachTitleBarToWindow(window);
@@ -71,13 +80,22 @@ function createWindow(route, options) {
       event.preventDefault();
       window.hide();
 
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (!window.isVisible()) {
           window.destroy();
           delete windows[route];
           console.log('The previous window has been destroyed');
         }
-      }, 10000);
+      }, 500);
+
+      // 清理定时器防止操作已被销毁的对象
+      window.once('closed', () => {
+        clearTimeout(timeoutId);
+        if (window.updateInterval) {
+          clearInterval(window.updateInterval);
+        }
+      });
+
     }
   });
   // 处理窗口打开外部链接
@@ -102,13 +120,22 @@ app.whenReady().then(() => {
   nativeTheme.themeSource = 'light';  // 设置默认主题
   electronApp.setAppUserModelId('com.electron');  // 设置应用模型 ID
 
+  // 处理窗口标题更新事件
+  ipcMain.on('window-title-update', (_, { windowId, title, logo = '' }) => {
+    const win = BrowserWindow.fromId(windowId);
+    if (win) {
+      win.setTitle(title);
+      win.webContents.send('window-title-updated', { title, logo });
+    }
+  });
+
   // 当创建新的浏览器窗口时，监视窗口快捷键
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
 
   // 处理窗口置顶事件
-  ipcMain.on('toggle-always-on-top', (event, windowId) => {
+  ipcMain.on('toggle-always-on-top', (_, windowId) => {
     const win = BrowserWindow.fromId(windowId);
     if (win) {
       const isAlwaysOnTop = win.isAlwaysOnTop();
@@ -124,7 +151,7 @@ app.whenReady().then(() => {
   });
 
   // 处理创建通用窗口请求
-  ipcMain.handle('create-generic-window', (event, { route, width, height, title }) => {
+  ipcMain.handle('create-generic-window', (_, { route, width, height }) => {
     if (windows[route]) {
       windows[route].show();
     } else {
@@ -132,18 +159,43 @@ app.whenReady().then(() => {
         width,
         height,
         show: false,
-        title,
         titleBarStyle: 'hidden',
         resizable:false,  // 能否调整窗口大小和拉伸
-        frame: false, // 隐藏默认框架以实现自定义圆角
-        transparent: true, // 启用透明背景、
-        backgroundColor: '#00FFFFFF', // 设置透明背景
         ...(process.platform === 'linux' ? { icon } : {}),
       });
       genericWindow.once('ready-to-show', () => {
         genericWindow.show();
       });
+
+      if (route === '/statschart') {
+        const updateSystemData = async () => {
+          if (genericWindow.isDestroyed()) return; // 检查窗口是否已销毁
+          try {
+            const memoryData = await si.mem();
+            const cpuData = await si.currentLoad();
+            const gpuData = await si.graphics();
+            genericWindow.webContents.send('system-data', { memoryData, cpuData, gpuData });
+          } catch (error) {
+            console.error('Error fetching system data:', error);
+          }
+        };
+        genericWindow.updateInterval = setInterval(updateSystemData, 1000);
+        // 在窗口关闭时清理定时器
+        genericWindow.on('close', () => {
+          if (genericWindow.updateInterval) {
+            clearInterval(genericWindow.updateInterval);
+          }
+        });
+      }
     }
+  });
+
+  // 获取系统数据
+  ipcMain.handle('get-system-data', async () => {
+    const memoryData = await si.mem();
+    const cpuData = await si.currentLoad();
+    const gpuData = await si.graphics();
+    return { memoryData, cpuData, gpuData };
   });
 
   // 注册标题栏监听器
@@ -157,9 +209,6 @@ app.whenReady().then(() => {
     show: false,
     titleBarStyle: 'hidden',
     resizable:false,  // 能否调整窗口大小和拉伸
-    frame: false, // 隐藏默认框架以实现自定义圆角
-    // transparent: true, // 启用透明背景
-    // backgroundColor: '#00FFFFFF', // 设置透明背景
     ...(process.platform === 'linux' ? { icon } : {}),
   });
 
@@ -178,12 +227,16 @@ app.whenReady().then(() => {
   });
 });
 
+
+
 // 处理登录成功事件
-ipcMain.on('login-success', async () => {
+ipcMain.on('login-success', async (_, message) => {
+
+  console.log(message);  // 确认消息接收
+
   const rootWindow = windows['/'];
   if (rootWindow) {
-
-    // 创建新的 /home 路由窗口
+    // 创建新的 home 路由窗口
     const homeWindow = createWindow('/home', {
       width: 800,
       height: 600,
@@ -192,11 +245,22 @@ ipcMain.on('login-success', async () => {
       titleBarStyle: 'hidden',
       ...(process.platform === 'linux' ? { icon } : {}),
     });
-      rootWindow.destroy(); // 关闭当前登录窗口
-      delete windows['/']; // 删除登录窗口的引用
+
+    // 等待组件挂载和事件处理完成
+    setTimeout(() => {
+      rootWindow.destroy();
+      delete windows['/'];
       homeWindow.show();
+    }, 0);
   }
+
 });
+
+
+ipcMain.on('test-message', (_, message) => {
+  console.log(message);  // 确认消息接收
+});
+
 
 // 处理所有窗口关闭事件
 app.on('window-all-closed', () => {
